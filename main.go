@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -20,8 +21,8 @@ func main() {
 
 	taskList := []Task{}
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.Status(200).JSON(fiber.Map{"message": "success"})
+	app.Get("/api/tasks", func(c *fiber.Ctx) error {
+		return c.Status(200).JSON(fiber.Map{"message": "success", "data": taskList})
 	})
 
 	app.Post("/api/tasks", func(c *fiber.Ctx) error {
@@ -48,7 +49,26 @@ func main() {
 			if fmt.Sprint(task.ID) == id {
 				taskList[i].Completed = !taskList[i].Completed
 
-				return c.Status(200).JSON(taskList[i])
+				return c.Status(200).JSON(fiber.Map{"message": "success", "data": taskList[i]})
+			}
+		}
+
+		return c.Status(404).JSON(fiber.Map{"message": "task not found"})
+	})
+
+	app.Delete("/api/tasks/:id", func(c *fiber.Ctx) error {
+		id := c.Params("id")
+
+		taskID, err := strconv.Atoi(id)
+		if err != nil {
+			return c.Status(400).JSON(fiber.Map{"error": "Invalid task ID"})
+		}
+
+		for i, task := range taskList {
+			if task.ID == taskID {
+				taskList = append(taskList[:i], taskList[i+1:]...)
+
+				return c.Status(200).JSON(fiber.Map{"message": "success"})
 			}
 		}
 
