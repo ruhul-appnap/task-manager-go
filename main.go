@@ -41,5 +41,19 @@ func main() {
 		return c.Status(201).JSON(fiber.Map{"message": "success", "data": task})
 	})
 
+	app.Patch("/api/tasks/:id", func(c *fiber.Ctx) error {
+		id := c.Params("id")
+
+		for i, task := range taskList {
+			if fmt.Sprint(task.ID) == id {
+				taskList[i].Completed = !taskList[i].Completed
+
+				return c.Status(200).JSON(taskList[i])
+			}
+		}
+
+		return c.Status(404).JSON(fiber.Map{"message": "task not found"})
+	})
+
 	log.Fatal(app.Listen(":5000"))
 }
